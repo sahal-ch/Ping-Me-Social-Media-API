@@ -1,5 +1,4 @@
-from django.shortcuts import get_object_or_404, render
-from rest_framework import viewsets,generics
+from rest_framework import viewsets
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 
@@ -10,7 +9,6 @@ from rest_framework import permissions
 from rest_framework.decorators import action
 from user_profile.permissions import IsOwnerOrReadOnly
 from users.serializers import UserSerializer
-from django.http import Http404, request
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 
@@ -20,6 +18,8 @@ from rest_framework.parsers import JSONParser
 class FollowingViewSet(viewsets.ViewSet):
     parser_classes = [JSONParser]
     permission_classes=[permissions.IsAuthenticated,IsOwnerOrReadOnly]
+    
+    
     def get_queryset(self):
         user=self.request.user.pk
         q1=FriendRequest.objects.filter(request_from=user,status=True)
@@ -108,7 +108,7 @@ class FollowingViewSet(viewsets.ViewSet):
         user=self.request.user.pk
         q1=FriendRequest.objects.filter(request_from=user,status=True)
         q2=FriendRequest.objects.filter(request_to=user,status=True)
-        result=[user]
+        result=[]
         if q1.exists and not q2.exists:
             for i in range(len(q1.values())):
                 result.append(q1.values()[i]['request_to_id'])
