@@ -4,6 +4,7 @@ from .serializers import PostSerializer
 from user_profile.permissions import IsOwnerOrReadOnly
 from friends.models import FriendRequest
 from users.models import Account
+from user_profile.models import UserProfile
 
 
 from rest_framework import viewsets, permissions
@@ -40,23 +41,23 @@ class PostViewSet(viewsets.ModelViewSet) :
         
     @action(detail=False,methods=['GET'], name='Posts from other Accounts')
     def post_from_other_accounts(self,request):
-        user=self.request.user.pk
-        q1=FriendRequest.objects.filter(request_from=user,status=True)
-        q2=FriendRequest.objects.filter(request_to=user,status=True)
-        result=[]
-        if q1.exists and not q2.exists:
-            for i in range(len(q1.values())):
-                result.append(q1.values()[i]['request_to_id'])
-        elif not q1.exists and q2.exists:
-            for i in range(len(q2.values())):
-                result.append(q2.values()[i]['request_from_id'])
-        elif q1.exists and q2.exists:
-            for i in range(len(q1.values())):
-                result.append(q1.values()[i]['request_to_id'])
-            for i in range(len(q2.values())):
-                result.append(q2.values()[i]['request_from_id'])
-        else:
-            pass     
-        queryset = Post.objects.filter(owner__in=result).order_by('-post_date')
-        serializer = PostSerializer(queryset, many=True)
+        user = self.request.user.pk
+        following = FriendRequest.objects.filter(request_from=user,status=True)
+        result=[user]
+        
+        for i in range(len(following.values())):
+            result.append(following.values()[i]['request_to_id'])
+        account=Account.objects.exclude(id__in=result).values()
+        result.clear()
+        
+        for i in range(len(account.values())):
+            result.append(account.values()[i]['id'])
+        users = UserProfile.objects.filter(is_private=False, owner__in=result)
+        result.clear()
+        
+        for i in range(len(users.values())):
+            result.append(users.values()[i]['owner_id'])
+            
+        post=Post.objects.filter(owner__in = result)
+        serializer = PostSerializer(post, many=True)
         return Response(serializer.data)

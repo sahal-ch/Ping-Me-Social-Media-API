@@ -6,4 +6,4 @@ from .models import FriendRequest
 class FriendRequestSerializer(serializers.ModelSerializer) :
     class Meta :
         model = FriendRequest
-        fields = '__all__'
+        fields = ['request_from','request_to','status']

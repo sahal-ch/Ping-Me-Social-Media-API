@@ -154,15 +154,15 @@ class FollowingViewSet(viewsets.ViewSet):
 
     @action(detail=True,methods=['PUT'],name='Accept or Delete Follow Request')
     def follow_requests(self,request,pk):
-        print(pk)
         incoming_request=FriendRequest.objects.filter(request_to=self.request.user,request_from=pk,status=False).get()
-        print(incoming_request)
         serializer=FriendRequestSerializer(incoming_request,data=request.data)
+        
         if serializer.is_valid():
            serializer.save()
            return Response(serializer.data)    
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    
     @follow_requests.mapping.delete
     def delete_request(self,request,pk):
         print(pk)

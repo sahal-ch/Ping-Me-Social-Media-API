@@ -4,9 +4,7 @@ from .serializers import UserSerializer
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from datetime import date
-from django.db.models.functions import ExtractDay, ExtractMonth, ExtractYear
-
+from user_profile.models import UserProfile
 
 
 
@@ -53,11 +51,11 @@ class UserViewSet(viewsets.ViewSet) :
 class UserRegisterViewSet(viewsets.ViewSet) :
     def create(self, request) :
         serializer = UserSerializer(data=request.data)
-        print("hjkasfdjk hasjh fiashif sfhpiuas b")
-        print(request.data)
         
         if serializer.is_valid() :
-            serializer.save()
+            user=serializer.save()
+            user_profile = UserProfile(owner=user)
+            user_profile.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
